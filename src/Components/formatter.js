@@ -4,63 +4,11 @@ import axios from "axios";
 const Formatter = () => {
   const [productId, setProductId] = useState("");
   const [fetchedProductObject, setfetchedProductObject] = useState();
-  const [inputtedCountry, setInputtedCountry] = useState();
-  const [inputtedMaterials, setInputtedMaterials] = useState([]);
-  const [inputtedDescription, setInputtedDescription] = useState();
-  const [discriptionArray, setDescriptionArray] = useState();
-  const [newDescription, setNewDescription] = useState("");
-  const [numberOfElements, setNumberOfElements] = useState(1);
+  const [descriptionFormat, setDescriptionFormat] = useState("");
+  const [newDescription, setNewDescription] = useState("Vendor Title\n");
+  const [propertyInput, setPropertyInput] = useState({});
+  const arrayOfProperties = ["title", "vendor", "price", "id", "variants"];
 
-  const changeDescriptionInputToArray = () => {
-    setDescriptionArray(inputtedDescription.split("-"));
-  };
-  const updateNewDescription = () => {
-    const newElement = (
-      <p>
-        {fetchedProductObject
-          ? fetchedProductObject["product"]["vendor"]
-          : "Vendor"}{" "}
-        {fetchedProductObject
-          ? fetchedProductObject["product"]["title"]
-          : "Title"}
-        <br></br> <br></br>
-        {discriptionArray
-          ? discriptionArray.map((item) => (
-              <React.Fragment>
-                {item}
-                <br />
-              </React.Fragment>
-            ))
-          : "Description"}{" "}
-        <br></br> <br></br>
-        Made in {inputtedCountry ? inputtedCountry : "Country"} <br></br>
-        {inputtedMaterials
-          ? inputtedMaterials.map((materials, i) => {
-              if (i !== 0 && elementsArray.length >= i) {
-                return `, ${materials}`;
-              } else if (elementsArray.length >= i) {
-                return `${materials}`;
-              }
-            })
-          : "50% Materials, 50% Materials"}
-        <br></br>
-        {fetchedProductObject
-          ? fetchedProductObject["product"]["variants"][0]["sku"]
-          : "SKU code"}
-      </p>
-    );
-    setNewDescription(newElement);
-  };
-  const elementsArray = Array.from(
-    { length: numberOfElements },
-    (_, index) => index
-  );
-  const addingToMaterialArray = (index, input) => {
-    const Array = inputtedMaterials;
-    Array[index] = input;
-    setInputtedMaterials(Array);
-    console.log(inputtedMaterials);
-  };
   const fetchProduct = async () => {
     try {
       const response = await fetch(
@@ -100,56 +48,49 @@ const Formatter = () => {
       console.error("Error updating product description:", error);
     }
   };
-  useEffect(updateNewDescription);
+  function combineInputsAndFormat() {
+    let format = descriptionFormat;
+    arrayOfProperties.forEach((property) => {
+      if (propertyInput[property]) {
+        format = format.replace(property, propertyInput[property]);
+      }
+    });
+    setNewDescription(format);
+  }
+  useEffect(() => {
+    combineInputsAndFormat();
+  });
   return (
     <div>
       <div>
-        <input
-          type="text"
-          placeholder="Product Id"
-          value={productId}
-          onChange={(e) => setProductId(e.target.value)}
-        />
-        <button>Get Product Info</button>
+        {arrayOfProperties.map((property) => {
+          if (descriptionFormat.includes(property)) {
+            return (
+              <input
+                placeholder={property}
+                onChange={(e) => {
+                  setPropertyInput({
+                    ...propertyInput,
+                    [property]: e.target.value,
+                  });
+                  console.log(propertyInput);
+                }}
+              ></input>
+            );
+          }
+        })}
       </div>
-      <div>
-        <div>
-          {elementsArray.map((index) => (
-            <input
-              onChange={(e) => {
-                addingToMaterialArray(index, e.target.value);
-              }}
-              placeholder="Composition "
-            />
-          ))}
-        </div>{" "}
-        <div>
-          <p>Amount of fabrics</p>
-          <button onClick={() => setNumberOfElements(numberOfElements + 1)}>
-            +
-          </button>{" "}
-          <button onClick={() => setNumberOfElements(numberOfElements - 1)}>
-            -
-          </button>
-        </div>
-        <div>
-          <input
-            onChange={(e) => {
-              setInputtedCountry(e.target.value);
-            }}
-            placeholder="Country"
-          />{" "}
-        </div>
-        <textarea
-          onChange={(e) => {
-            setDescriptionArray(e.target.value.split("\n"));
-          }}
-          placeholder="New Description"
-        />
-      </div>
+      <textarea
+        className="formatInput"
+        onChange={(e) => {
+          setDescriptionFormat(e.target.value);
+        }}
+      ></textarea>{" "}
       <h2>Description Preview</h2>
-      {newDescription}
-      <button onClick={updateProductDescription}>Update Description</button>
+      <p className="newDescriptionParargraph">
+        <pre>{newDescription}</pre>
+      </p>
+      <button>Update Description</button>
     </div>
   );
 };
