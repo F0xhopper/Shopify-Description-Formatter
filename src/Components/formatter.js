@@ -57,23 +57,49 @@ const Formatter = () => {
     });
     setNewDescription(format);
   }
+  function getProductInfo() {
+    fetchProduct();
+    for (const property in propertyInput) {
+      propertyInput({
+        ...propertyInput,
+        [property]: fetchedProductObject[property],
+      });
+    }
+  }
   useEffect(() => {
     combineInputsAndFormat();
   });
   return (
     <div>
       <div>
+        <div>
+          <input
+            placeholder="Product ID"
+            onChange={(e) => {
+              setProductId(e.target.value);
+            }}
+          ></input>
+          <button>Get product info</button>
+        </div>
+        <h3>avialable propertys</h3>
+        <p>
+          {arrayOfProperties.map((prop) => {
+            return `${prop} `;
+          })}
+        </p>
+      </div>
+      <div>
         {arrayOfProperties.map((property) => {
           if (descriptionFormat.includes(property)) {
             return (
               <input
+                value={propertyInput[property]}
                 placeholder={property}
                 onChange={(e) => {
                   setPropertyInput({
                     ...propertyInput,
                     [property]: e.target.value,
                   });
-                  console.log(propertyInput);
                 }}
               ></input>
             );
